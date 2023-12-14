@@ -1,0 +1,52 @@
+---
+name: 'test_rss_double_integrator'
+
+# Environment
+env: 'double_integrator'
+world_dim: 2
+state_dim: 4
+control_dim: 2
+goal_dim: 4
+dt: 0.01
+
+# Model architecture
+z_env_dim: 64
+context_dim: 64
+num_flows: 10
+horizon: 40
+flow_type: 'nvp'
+vae_flow_prior: True
+voxels: False
+
+# Training hyperparameters
+epochs: 1000
+print_epochs: 10
+samples_per_env: 512
+lr: 1.0e-3
+batch_size: 64
+samples_per_vis: 64
+vae_training_epochs: 100
+device: 'cuda:0'
+min_alpha: 2.0e-3
+max_alpha: 1.0
+alpha_schedule: 'inverse_linear'
+max_beta: 1.0
+min_beta: 1.0
+beta_schedule: 'linear'
+randomize_cost_params: False
+train_with_noise: True
+normalize_costs: True
+
+# Only relevant if randomise_cost_params is True
+condition_on_cost_params: False
+param_dim: 0
+min_sigma: 0.2
+min_lengthscale: 0.02
+min_vel_penalty: 0.01
+
+# Data
+training_data:
+  - 'train_data_spheres_double_integrator.npz'
+test_data: 'test_data_spheres_double_integrator.npz'
+
+
