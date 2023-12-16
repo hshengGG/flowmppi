@@ -70,7 +70,8 @@ class SVIMPC_LossFcn:
                                  sample weights
                :return: Scalar loss value
         """
-
+        #print(f"use_grad: {self.use_grad}")
+        #print(f"supervised: {self.supervised}")
         # Computes average loss per environments
         if self.use_grad:
             loss, metadata = self.grad_loss(U, log_qU, starts, goals, environments,

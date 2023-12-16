@@ -284,6 +284,7 @@ class MPCController:
             self.z_env = torch.sum(weights.reshape(-1, 1) * z_env, dim=0, keepdim=True)
 
     def project_imagined_environment(self, state, num_iters, name=None):
+        total_start = time.time()
         loss_fn = SVIMPC_LossFcn(self.generative_model, False, use_grad=self.use_true_grad)
         lr = 1e-2
         
@@ -347,7 +348,6 @@ class MPCController:
         #iter_start_time = time.time()
         #print(f"iteration count: {num_iters}")
         for iter in range(num_iters):
-            total_start = time.time()
             action_start = time.time()
             U, log_qU, context_dict = self.action_sampler(states,
                                                           goals,
@@ -398,6 +398,8 @@ class MPCController:
             print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
             grad_percent = loss_fn.grad_time/total_time * 100
             print(f"Time for grad_t is {loss_fn.grad_time}; The percentage is {grad_percent}%")
+            print(f"Total Time is {total_time}")
+
             
             print(f"Total Time is {total_time}")
 
