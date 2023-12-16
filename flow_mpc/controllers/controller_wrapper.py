@@ -10,6 +10,8 @@ from flow_mpc.trainer import SVIMPC_LossFcn
 import matplotlib.pyplot as plt
 from flow_mpc.visualisation import add_trajectory_to_axis
 import matplotlib
+import time
+import csv
 
 matplotlib.use('tkAgg')
 
@@ -58,7 +60,7 @@ class MPCController:
             self.controller = MPPI(self.cost, state_dim, action_dim, horizon, Nsamples, config['lambda'],
                                    config['sigma'], control_constraints=control_constraints, device=device,
                                    action_transform=self.action_transform, flow=flow, iterations=config['iters'])
-
+        
         elif 'icem' in config['name']:
             if self.project:
                 N_project_samples = N // project_sample_fraction
@@ -69,7 +71,18 @@ class MPCController:
                                    sigma=config['sigma'], elites_keep_fraction=config['kept_elites'],
                                    iterations=config['iters'], control_constraints=None, device=device,
                                    action_transform=self.action_transform, flow=flow)
-        '''        
+        
+        self.N = N_project_samples
+        self.dx = state_dim
+        self.du = action_dim
+        self.H = horizon
+        self.device = device
+        self.sdf = torch.zeros((1, 64, 64), device=device)
+        self.goal = torch.zeros((1, 3), device=device)
+        self.N = N // project_sample_fraction
+        self.use_vae = use_vae
+        self.cost_params = None
+    '''
         elif 'svmpc' in config['name']:
             if flow:
                 raise NotImplementedError()
@@ -81,17 +94,7 @@ class MPCController:
                                     lambda_=config['lambda'], sigma=config['sigma'], lr=config['lr'],
                                     iters=config['iters'], device=device,
                                     action_transform=None, flow=False)
-        '''       
-        self.N = N_project_samples
-        self.dx = state_dim
-        self.du = action_dim
-        self.H = horizon
-        self.device = device
-        self.sdf = torch.zeros((1, 64, 64), device=device)
-        self.goal = torch.zeros((1, 3), device=device)
-        self.N = N // project_sample_fraction
-        self.use_vae = use_vae
-        self.cost_params = None
+    '''
 
     def cost(self, x, U):
         N, H, du = U.shape
@@ -175,13 +178,26 @@ class MPCController:
             self.cost_params = self.cost_params.reshape(1, -1)
 
     def step(self, state, project=False):
+        
+        step_start = time.time()
         tstate = torch.from_numpy(state).to(device=self.device).reshape(1, -1).float()
-
+        project_time = 0
+        diff = 0
+        vae_time = 0
+        flow_time = 0
+        loss_time = 0
+        backward_time = 0
+        optimiser_time = 0
+        project_total = 0
         if project:
-            self.project_imagined_environment(state, 1)
+            start_time=time.time()
+            vae_time, flow_time, loss_time, backward_time, optimiser_time, project_total = self.project_imagined_environment(state, 1)
+            end_time = time.time()
+            project_time = end_time-start_time
             # self.random_shooting_best_env(state)
-
         with torch.no_grad():
+            #print("---------------")
+            #print(f"slef_nominal is {self.sample_nominal}")
             if self.sample_nominal:
                 N = 5
                 U, _, _ = self.action_sampler.sample(
@@ -213,9 +229,31 @@ class MPCController:
 
         # Step will sometimes fail due to some stupid numerics (bad samples) -- this is a hack but it seems to be rare
         # enough that it is OK
-        U = self.controller.step(tstate)
+        U, forward_NF_time, reverse_NF_time, cost_time = self.controller.step(tstate)
         # return first action from sequence, and entire action sequence
-        return U[0].detach().cpu().numpy(), self.controller.best_K_U.detach().cpu().numpy(), U.detach().cpu().numpy()
+
+        step_end = time.time()
+        
+        print("--------------------------------------------------------")
+        forward_NF_percent = forward_NF_time/(step_end - step_start) * 100
+        print(f"Time for forward NF is {forward_NF_time}; The percentage is {forward_NF_percent}%")
+        reverse_NF_percent = reverse_NF_time/(step_end - step_start) * 100
+        print(f"Time for reverse NF is {reverse_NF_time}; The percentage is {reverse_NF_percent}%")
+        cost_percent = cost_time/(step_end - step_start) * 100
+        print(f"Time for Cost function is {cost_time}; The percentage is {cost_percent}%")
+        project_percent = project_time/(step_end - step_start) * 100
+        print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
+        '''
+	diff_percent = diff/project_time * 100
+        print(f"Time for part of projection function is {diff}; The percentage is {diff_percent}%")
+        '''
+        step_total = step_end-step_start
+        other_code_time = step_end - step_start - project_time - forward_NF_time - reverse_NF_time - cost_time
+        other_percent = other_code_time/(step_end - step_start) * 100
+        print(f"Time for other code in step function is {other_code_time}; The percentage is {other_percent}%")
+        
+        
+        return U[0].detach().cpu().numpy(), self.controller.best_K_U.detach().cpu().numpy(), U.detach().cpu().numpy(), forward_NF_time, reverse_NF_time, cost_time, project_time, vae_time, flow_time, loss_time, backward_time, optimiser_time, step_total, project_total
 
     def random_shooting_best_env(self, state):
         num_envs = 100
@@ -306,7 +344,11 @@ class MPCController:
                                    X.detach().cpu().unsqueeze(0).numpy(), self.raw_sdf, f'{name}_before.png')
         alpha, beta, kappa = 1.0, 1.0, np.prod(self.sdf.shape[1:]) / z_env.shape[1]
         sigma = 1
+        #iter_start_time = time.time()
+        #print(f"iteration count: {num_iters}")
         for iter in range(num_iters):
+            total_start = time.time()
+            action_start = time.time()
             U, log_qU, context_dict = self.action_sampler(states,
                                                           goals,
                                                           environment=None,
@@ -314,16 +356,21 @@ class MPCController:
                                                           cost_params=self.cost_params,
                                                           N=num_samples,
                                                           sigma=sigma)
-
+            action_end = time.time()
+            vae_start = time.time()
             log_p_env = self.action_sampler.environment_encoder.vae.prior.log_prob(z_env).sum(dim=1)
-
+            vae_end = time.time()
             # if self.project_use_reg:
+            loss_start = time.time()
             loss_dict, _ = loss_fn.compute_loss(U, log_qU, states, goals,
                                                 self.sdf[0],
                                                 self.sdf_grad[0], self.cost_params,
                                                 log_p_env, None,
                                                 alpha=alpha, beta=beta, kappa=kappa, normalize=True)
+            loss_end = time.time()
+            backward_start = time.time()
             loss_dict['total_loss'].backward()
+            backward_end = time.time()
             # else:
             # loss = -kappa * log_p_env.sum() / np.prod(self.sdf.shape[1:])
             # loss.backward()
@@ -331,7 +378,30 @@ class MPCController:
             # print(log_p_env)
             optimiser.step()
             optimiser.zero_grad()
+            total_end = time.time()
+            total_time = total_end - total_start
+            flow_time = action_end - action_start
+            vae_time = vae_end - vae_start
+            loss_time = loss_end - loss_start
+            backward_time = backward_end - backward_start
+            optimiser_time = total_time - flow_time - vae_time - loss_time - backward_time
+            print("--------------------------------------------------------")
+            vae_percent = vae_time/total_time * 100
+            print(f"Time for VAE is {vae_time}; The percentage is {vae_percent}%")
+            flow_percent = flow_time/total_time * 100
+            print(f"Time for flow is {flow_time}; The percentage is {flow_percent}%")
+            loss_percent = loss_time/total_time * 100
+            print(f"Time for loss is {loss_time}; The percentage is {loss_percent}%")
+            backward_percent = backward_time/total_time * 100
+            print(f"Time for backward is {backward_time}; The percentage is {backward_percent}%")
+            opt_percent = optimiser_time/total_time * 100
+            print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
+            
+            print(f"Total Time is {total_time}")
 
+
+        #iter_end_time = time.time()
+        #diff_time = iter_end_time - iter_start_time
         with torch.no_grad():
             imagined_sdf = self.action_sampler.environment_encoder.reconstruct(z_env, N=1)
             imagined_sdf = imagined_sdf['environments']
@@ -355,13 +425,12 @@ class MPCController:
             visualise_trajectories(states[0].detach().unsqueeze(0).cpu().numpy(),
                                    goals[0].detach().unsqueeze(0).cpu().numpy(),
                                    X.detach().cpu().unsqueeze(0).numpy(), self.raw_sdf, f'{name}_after.png')
-
+        return vae_time, flow_time, loss_time, backward_time, optimiser_time, total_time
         # print('Deviation from original z', torch.linalg.norm(self.z_env - self.og_z_env))
 
     def load_model(self, model_path):
-        #print(torch.load(model_path, map_location=self.device))
         self.action_sampler.load_state_dict(torch.load(model_path, map_location=self.device), strict=False)
-    
+
     def reset(self):
         self.controller.reset()
 
@@ -415,3 +484,8 @@ def index_sdf(sdf, indices):
     indexy[:, :, 0] = indices[:, 0].reshape(-1, 1).repeat(1, 64)
     y_indexed_sdf = sdf.view(-1, 64, 64).gather(2, indexy).squeeze(2)
     return y_indexed_sdf.gather(1, indices[:, 1].reshape(-1, 1))
+'''
+with open('../perf.csv', 'w') as file:
+        writer = csv.writer(file)
+        writer.writerow()
+'''

@@ -161,8 +161,8 @@ class FlowActionSampler(BaseActionSampler):
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(B * N, H)
         prior = Normal(self.prior_mu, self.prior_scale)
         log_qz = torch.zeros(B * N, device=z.device)
-        u = self.flow.transform_from_noise(z.reshape(N * B, -1), context=context_n_samples)
-
+        u,_ = self.flow._transform.inverse(z.reshape(N * B, -1), context=context_n_samples)
+        
         # u, delta_log_qu = out[:2]
         if self.training and self.flow_type == 'ffjord':
             context_net_out['reg'] = self.flow.chain[0].regularization_states[1:]
@@ -192,4 +192,5 @@ class FlowActionSampler(BaseActionSampler):
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
 
         z = self.flow.transform_to_noise(u.reshape(N * B, -1), context_n_samples)
+        
         return z.reshape(B, N, -1), context_dict

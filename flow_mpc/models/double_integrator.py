@@ -9,6 +9,7 @@ class DoubleIntegratorDynamics(nn.Module):
     def __init__(self, dim=2):
         super(DoubleIntegratorDynamics, self).__init__()
         dt = 0.05
+        self.dt = dt
 
         if dim == 2:
             # Add viscous damping to A matrix
@@ -40,11 +41,59 @@ class DoubleIntegratorDynamics(nn.Module):
         else:
             raise ValueError('dim must either be 2 or 3')
 
-    def forward(self, state, action):
-        return self.batched_dynamics(state, action)
+    def forward(self, state, control): #changed from action to control
+        return self.batched_dynamics(state, control)
+        ''' unroll state '''
+        '''
+        g = -9.81
+        m = 1
+        Ix, Iy, Iz = 0.5, 0.1, 0.3
+        K = 5
+        #print(control.shape)
+        #print(state)
+        #print(state.shape)
+        state = torch.cat((state, torch.rand((256,8), device = 'cuda:0')), 1)
+        #print(state)
+        control =  torch.cat((control, torch.rand((256,2), device = 'cuda:0')),1)
+        x, y, z, phi, theta, psi, x_dot, y_dot, z_dot, p, q, r = torch.chunk(state, chunks=12, dim=-1)
 
+        u1, u2, u3, u4 = torch.chunk(control, chunks=4, dim=-1)
+
+        # Trigonometric fcns on all the angles needed for dynamics
+        cphi = torch.cos(phi)
+        ctheta = torch.cos(theta)
+        cpsi = torch.cos(psi)
+
+        sphi = torch.sin(phi)
+        stheta = torch.sin(theta)
+        spsi = torch.sin(psi)
+
+        ttheta = torch.tan(theta)
+
+        x_ddot = -(sphi * spsi + cpsi * cphi * stheta) * K * u1 / m
+        y_ddot = - (cpsi * sphi - cphi * spsi * stheta) * K * u1 / m
+        z_ddot = g - (cphi * ctheta) * K * u1 / m
+
+        p_dot = ((Iy - Iz) * q * r + K * u2) / Ix
+        q_dot = ((Iz - Ix) * p * r + K * u3) / Iy
+        r_dot = ((Ix - Iy) * p * q + K * u4) / Iz
+        
+        # velocities
+        psi_dot = q * sphi / ctheta + r * cphi / ctheta
+        theta_dot = q * cphi - r * sphi
+        phi_dot = p + q * sphi * ttheta + r * cphi * ttheta
+
+        dstate = torch.cat((x_dot, y_dot, z_dot, phi_dot, theta_dot, psi_dot,
+                            x_ddot, y_ddot, z_ddot, p_dot, q_dot, r_dot), dim=-1)
+        #print((state + dstate * self.dt).shape)
+        #ans = (state + dstate * self.dt)[:,0:4]
+        #print(ans)
+        #print(ans.shape)
+        return (state + dstate * self.dt)[:, 0:4]
+        '''
     def batched_dynamics(self, state, action):
         u = action  # torch.clamp(action, min=-10, max=10)
+        
         return (self.A @ state.unsqueeze(2) + self.B @ u.unsqueeze(2)).squeeze()
 
 

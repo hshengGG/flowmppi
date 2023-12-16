@@ -29,29 +29,18 @@ min_sigma: 0.2
 min_lengthscale: 0.02
 min_vel_penalty: 0.01
 
-num_envs: 100
+num_envs: 1
 episode_length: 100
 normalize_costs: True
 
 # controllers
 sample_budget: 512
 controllers:
-  mppi:
-    lambda: 0.9
-    sigma: 1
-    iters: 1
-  icem:
-    sigma: 0.75
-    noise_param: 2.5
-    elite_fraction: 0.1
-    kept_elites: 0.3
-    iters: 4
-    momentum: 0.1
-  flowmppi:
-    lambda: 1
-    sigma: 1
-    iters: 1
-    project: False
+#  flowmppi:
+#    lambda: 1
+#    sigma: 1
+#    iters: 1
+#    project: False
   flowmppi_project:
     lambda: 1
     sigma: 1
@@ -59,24 +48,5 @@ controllers:
     project: True
     M: 10
     learning_rate: 0.01
-  flowicem:
-    sigma: 0.75
-    noise_param: 2.5
-    elite_fraction: 0.25
-    kept_elites: 0.25
-    iters: 4
-    momentum: 0.1
-    project: False
-  flowicem_project:
-    sigma: 0.75
-    noise_param: 2.5
-    elite_fraction: 0.25
-    kept_elites: 0.25
-    iters: 4
-    momentum: 0.1
-    project: True
-    M: 10
-    learning_rate: 0.01
-
 
 

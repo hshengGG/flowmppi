@@ -1,5 +1,5 @@
 import torch
-
+import time
 
 class MPPI:
 
@@ -33,11 +33,14 @@ class MPPI:
             peturbed_actions = torch.zeros_like(noise)
 
             if self.flow:
-                print(self.flow)
                 # Peturbed actions in action space
+                start_time = time.time()
+		        
                 peturbed_actions[:self.N//2] = self.action_transform(x[0].unsqueeze(0), noise[:self.N//2])
+    		    
+                end_time = time.time()
+                forward_NF_time = end_time-start_time
                 peturbed_actions[self.N//2:] = self.U.unsqueeze(dim=0) + self.sigma * noise[self.N//2:]
-
                 action_cost_Z = torch.sum(self.lambda_ * noise * (noise - self.Z), dim=[1, 2])
                 action_cost_U = torch.sum(self.lambda_ * noise * self.U / self.sigma, dim=[1, 2])
 
@@ -52,7 +55,10 @@ class MPPI:
                                                    max=self.control_constraints[1])
                 action_cost = torch.sum(self.lambda_ * noise * self.U / self.sigma, dim=[1, 2]) / self.du
             # Get total cost
+            start_time = time.time()
             total_cost = self.cost(x, peturbed_actions)
+            end_time = time.time()
+            cost_time = end_time-start_time
             total_cost += action_cost
             #total_cost -= torch.min(total_cost)
             #total_cost /= torch.max(total_cost)
@@ -84,13 +90,17 @@ class MPPI:
         out_U = self.U.clone()
         self.U = torch.roll(self.U, -1, dims=0)
         self.U[-1] = torch.zeros(self.du, device=self.device)
-
+        action_start = 0
+        action_end = 0
+        
         if self.action_transform is not None:
+            action_start = time.time()
             self.Z = self.action_transform(x[0].unsqueeze(0),
                                            self.U.unsqueeze(0),
                                            reverse=True)
-
-        return out_U
+            action_end = time.time()
+        reverse_NF_time = action_end - action_start
+        return out_U, forward_NF_time, reverse_NF_time, cost_time
 
     def reset(self):
         self.U = self.sigma * torch.randn(self.H, self.du, device=self.device)
