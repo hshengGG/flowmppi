@@ -286,7 +286,7 @@ class MPCController:
     def project_imagined_environment(self, state, num_iters, name=None):
         loss_fn = SVIMPC_LossFcn(self.generative_model, False, use_grad=self.use_true_grad)
         lr = 1e-2
-
+        
         z_env = torch.nn.Parameter(self.z_env[0].unsqueeze(0).clone())
         z_env.requires_grad = True
         optimiser = optim.Adam(
@@ -396,6 +396,8 @@ class MPCController:
             print(f"Time for backward is {backward_time}; The percentage is {backward_percent}%")
             opt_percent = optimiser_time/total_time * 100
             print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
+            grad_percent = loss_fn.grad_time/total_time * 100
+            print(f"Time for grad_t is {loss_fn.grad_time}; The percentage is {grad_percent}%")
             
             print(f"Total Time is {total_time}")
 

@@ -21,6 +21,7 @@ class Trainer(nn.Module):
         self.planning_network = planning_network
         self.loss_fn = loss_fn
         self.metadata = None
+        self.grad_time = 0
 
     def forward(self, starts, goals, sdf, sdf_grad, U, cost_params,
                 samples_per_env, alpha, beta, kappa, sigma=None, plot=False, reconstruct=True, normalize=False):
@@ -47,6 +48,7 @@ class SVIMPC_LossFcn:
         self.repel_trajectories = repel_trajectories
         self.use_grad = use_grad
         self.supervised = supervised
+        
 
     def compute_loss(self, U, log_qU, starts, goals, environments, environment_grad, cost_params,
                      log_p_env, regularisation, alpha=1, beta=1, kappa=1, prior_weights=None, plot=False,
@@ -77,10 +79,12 @@ class SVIMPC_LossFcn:
             loss, metadata = self.supervised_loss(U, log_qU, starts, goals, environments,
                                                   environment_grad, alpha, beta, plot=plot)
         else:
+            start_t = time.time()
             loss, metadata = self.grad_free_loss(U, log_qU, starts, goals, environments,
                                                  cost_params, alpha, beta, prior_weights=prior_weights,
                                                  plot=plot, normalize=normalize)
-
+            end_t = time.time()
+            self.grad_time = end_t - start_t
         # Environment on loss
         if log_p_env is not None:
             loss['total_loss'] = loss['total_loss'] - kappa * log_p_env / np.prod(environments.shape[1:])
