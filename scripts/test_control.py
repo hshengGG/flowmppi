@@ -6,8 +6,8 @@ import numpy as np
 np.bool = bool
 np.float = float
 from cv2 import resize
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
+#import matplotlib.pyplot as plt
+#import matplotlib.animation as animation
 
 from flow_mpc.environments import DoubleIntegratorEnv, QuadcopterEnv, QuadcopterDynamicEnv
 from flow_mpc.models import DoubleIntegratorModel, QuadcopterModel
@@ -29,11 +29,11 @@ def parse_arguments():
     args = parser.parse_args()
     return args
 
-
+'''
 def create_animation(start, goal, sdf, trajectories, planned_trajectories, projected_sdfs, env_no, controller, env_type,
                      name,
                      costs=None):
-    import matplotlib.pylab as pl
+    #import matplotlib.pylab as pl
 
     # costs -= np.max(costs, axis=1, keepdims=True)
     # costs /= np.min(costs, axis=1, keepdims=True)
@@ -104,7 +104,7 @@ def create_animation(start, goal, sdf, trajectories, planned_trajectories, proje
     plt.close()
 
     return ani
-
+'''
 
 def save_visualisation_data(start, goal, sdf, trajectories, planning_trajectories, env_no, controller, env_type, name):
     fname = f'{FLOW_MPC_ROOT}/figures/{name}/control_test/{controller}/{env_type}/env_{env_no}_vis.npz'
@@ -116,7 +116,7 @@ def save_visualisation_data(start, goal, sdf, trajectories, planning_trajectorie
     data['planned_X'] = planning_trajectories
     np.savez(fname, **data)
 
-
+'''
 def visualise_trajectory(start, goal, trajectories, sdf, env_no, controller, env_type, name):
     fig, ax = plt.subplots(1, 1)
     big_sdf = resize(sdf, (256, 256))
@@ -134,7 +134,7 @@ def visualise_trajectory(start, goal, trajectories, sdf, env_no, controller, env
     # plt.show()
     plt.savefig(f'{FLOW_MPC_ROOT}/figures/{name}/control_test/{env_type}/env_{env_no}_{controller}.png')
     plt.close()
-
+'''
 
 def test_controller(env, controller, T=50):
     total_start = time.time()
