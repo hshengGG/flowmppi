@@ -8,7 +8,8 @@ np.float = float
 from cv2 import resize
 #import matplotlib.pyplot as plt
 #import matplotlib.animation as animation
-
+import sys
+sys.path.insert(1, '/home/htsheng/flowmppi/flow_mpc')
 from flow_mpc.environments import DoubleIntegratorEnv, QuadcopterEnv, QuadcopterDynamicEnv
 from flow_mpc.models import DoubleIntegratorModel, QuadcopterModel
 from flow_mpc.controllers import MPCController
