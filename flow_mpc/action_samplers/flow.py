@@ -1,4 +1,5 @@
 import torch
+import time
 from torch import nn
 from .base import BaseActionSampler
 from torch.distributions.normal import Normal
@@ -73,10 +74,15 @@ class FlowActionSampler(BaseActionSampler):
         context_net_out = self.condition(start, goal, environment, cost_params, z_environment, reconstruct=reconstruct)
         context = context_net_out['context']
         B, H = context.shape
+        forward_start = time.time()
         u = self.flow.sample(num_samples=N, context=context)
+        forward_end = time.time()
+        self.forward_time = forward_end - forward_start
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
+        line83_start = time.time()
         log_qu = self.flow.log_prob(u.reshape(B * N, -1).detach(), context=context_n_samples)
-
+        line83_end = time.time()
+        self.logqu_sample_time = line83_end - line83_start
         context_net_out['Wj'] = None
         context_net_out['reg'] = None
 
@@ -99,8 +105,10 @@ class FlowActionSampler(BaseActionSampler):
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
 
         # out = self.flow(u.reshape(N * B, H * du), logpx=log_qu, context=context_n_samples, reverse=True)
+        line109_start = time.time()
         log_qu = self.flow.log_prob(u.reshape(N * B, H * du), context=context_n_samples)
-
+        line109_end = time.time()
+        self.logqu_like_time = line109_end - line109_start
         if self.training and self.flow_type == 'ffjord':
             context_dict['reg'] = self.flow.chain[0].regularization_states[1:]
         else:
@@ -177,6 +185,7 @@ class FlowActionSampler(BaseActionSampler):
         if sigma is None:
             return self.sample(start, goal, environment, cost_params=cost_params, N=N, reconstruct=reconstruct,
                                z_environment=z_environment)
+        print("running sample with peturbation\n")
         return self.sample_w_peturbation(start, goal, environment, cost_params=cost_params,
                                          N=N, sigma=sigma, reconstruct_env=reconstruct,
                                          z_environment=z_environment)

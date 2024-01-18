@@ -13,7 +13,7 @@ import matplotlib
 import time
 import csv
 
-matplotlib.use('tkAgg')
+#matplotlib.use('tkAgg')
 
 
 class MPCController:
@@ -243,6 +243,7 @@ class MPCController:
         print(f"Time for Cost function is {cost_time}; The percentage is {cost_percent}%")
         project_percent = project_time/(step_end - step_start) * 100
         print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
+        
         '''
 	diff_percent = diff/project_time * 100
         print(f"Time for part of projection function is {diff}; The percentage is {diff_percent}%")
@@ -325,7 +326,6 @@ class MPCController:
             states[:, self.dx // 2:] = torch.randn_like(states[:, self.dx // 2:])
         goals[0] = self.goal[0]
         states[0] = torch.from_numpy(state).to(device=self.device).float()
-
         # visualise_starts_and_goals(states.detach().cpu().numpy(), goals.detach().cpu().numpy(),
         #                           self.sdf.detach().cpu().numpy()[0, 0])
 
@@ -398,10 +398,15 @@ class MPCController:
             print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
             grad_percent = loss_fn.grad_time/total_time * 100
             print(f"Time for grad_t is {loss_fn.grad_time}; The percentage is {grad_percent}%")
+            forward_percent = self.forward_time/flow_time * 100
+            print(f"Time for forward/flow is {self.forward_time}; The percentage is {forward_percent}%")
+            logqu_sample_percent = self.logqu_sample_time/flow_time * 100
+            print(f"Time for logqu/flow is {self.logqu_sample_time}; The percentage is {logqu_sample_percent}%")
+            logqu_like_percent = self.logqu_like_time/flow_time * 100
+            print(f"Time for logqu/flow is {self.logqu_like_time}; The percentage is {logqu_like_percent}%")
             print(f"Total Time is {total_time}")
 
             
-            print(f"Total Time is {total_time}")
 
 
         #iter_end_time = time.time()
