@@ -400,10 +400,10 @@ class MPCController:
             print(f"Time for grad_t is {loss_fn.grad_time}; The percentage is {grad_percent}%")
             forward_percent = self.action_sampler.forward_time/flow_time * 100
             print(f"Time for forward/flow is {self.action_sampler.forward_time}; The percentage is {forward_percent}%")
-            logqu_sample_percent = self.logqu_sample_time/flow_time * 100
-            print(f"Time for logqu/flow is {self.logqu_sample_time}; The percentage is {logqu_sample_percent}%")
-            logqu_like_percent = self.logqu_like_time/flow_time * 100
-            print(f"Time for logqu/flow is {self.logqu_like_time}; The percentage is {logqu_like_percent}%")
+            logqu_sample_percent = self.action_sampler.logqu_sample_time/flow_time * 100
+            print(f"Time for logqu/flow is {self.action_sampler.logqu_sample_time}; The percentage is {logqu_sample_percent}%")
+            logqu_like_percent = self.action_sampler.logqu_like_time/flow_time * 100
+            print(f"Time for logqu/flow is {self.action_sampler.logqu_like_time}; The percentage is {logqu_like_percent}%")
             print(f"Total Time is {total_time}")
 
             
