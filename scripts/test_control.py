@@ -215,8 +215,8 @@ def test_controller(env, controller, T=50):
     control_history = np.asarray(control_history)
     planned_control_sequences = np.asarray(planned_control_sequences)
     failure = collision_failure or not env.at_goal()
-    print("-------------forward array----------------")
-    print(forward_NF_times)
+    #print("-------------forward array----------------")
+    #print(forward_NF_times)
     if len(projected_envs) > 0:
         projected_envs = np.asarray(projected_envs)
     else:
@@ -240,6 +240,10 @@ def test_controller(env, controller, T=50):
         writer.writerow(loss_times)
         writer.writerow(backward_times)
         writer.writerow(optimiser_times)
+        writer.writerow(controller.action_sampler.forward_times)
+        writer.writerow(controller.action_sampler.logqu_like_times)
+
+        writer.writerow(controller.action_sampler.logqu_sample_times)
    
     return -cost, state_history, control_history, planned_control_sequences, failure, projected_envs, total_time / count
 

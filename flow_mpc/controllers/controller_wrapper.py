@@ -230,6 +230,8 @@ class MPCController:
         # Step will sometimes fail due to some stupid numerics (bad samples) -- this is a hack but it seems to be rare
         # enough that it is OK
         U, forward_NF_time, reverse_NF_time, cost_time = self.controller.step(tstate)
+        print("--------------------printing U------------------")
+        print(f"{U}\n")
         # return first action from sequence, and entire action sequence
 
         step_end = time.time()
@@ -397,7 +399,7 @@ class MPCController:
             opt_percent = optimiser_time/total_time * 100
             print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
             grad_percent = loss_fn.grad_time/total_time * 100
-            print(f"Time for grad_t is {loss_fn.grad_time}; The percentage is {grad_percent}%")
+            print(f"Time for gradient is {loss_fn.grad_time}; The percentage is {grad_percent}%")
             forward_percent = self.action_sampler.forward_time/flow_time * 100
             print(f"Time for forward/flow is {self.action_sampler.forward_time}; The percentage is {forward_percent}%")
             logqu_sample_percent = self.action_sampler.logqu_sample_time/flow_time * 100
