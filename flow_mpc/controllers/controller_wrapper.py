@@ -404,7 +404,7 @@ class MPCController:
             print(f"Time for logqu_sample/flow is {self.action_sampler.logqu_sample_time}; The percentage is {logqu_sample_percent}%")
             logqu_like_percent = self.action_sampler.logqu_like_time/flow_time * 100
             print(f"Time for logqu_likelihood/flow is {self.action_sampler.logqu_like_time}; The percentage is {logqu_like_percent}%")
-            horizon_percent = loss_fn.horizon_time/loss_fn.grad_time_time * 100
+            horizon_percent = loss_fn.horizon_time/loss_fn.grad_time * 100
             print(f"Time for horizon/grad is {loss_fn.horizon_time}; The percentage is {horizon_percent}%")
             print(f"Total Time is {total_time}")
 
