@@ -196,6 +196,7 @@ class SVIMPC_LossFcn:
         _, dx = starts.shape
         metadata = {}
 
+        horizon_start = time.time()
         with torch.no_grad():
             log_p_cost, log_pU, X = self.cost_model(
                 starts.unsqueeze(1).repeat(1, N, 1),
@@ -205,7 +206,8 @@ class SVIMPC_LossFcn:
                 U,
                 params=cost_params
             )
-
+        horizon_end = time.time()
+        self.horizon_time = horizon_end - horizon_start
         # Reshape likelihoods
         log_p_cost = log_p_cost.reshape(B, N)
         log_pU = log_pU.reshape(B, N)
