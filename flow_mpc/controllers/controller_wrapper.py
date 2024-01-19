@@ -448,30 +448,30 @@ def visualise_starts_and_goals(starts, goals, sdf):
     import matplotlib.pyplot as plt
     from cv2 import resize
     import numpy as np
-    fig, ax = plt.subplots(1, 1)
+    #fig, ax = plt.subplots(1, 1)
     big_sdf = resize(sdf, (256, 256))
     goals = np.clip(256 * (goals[:, :2] + 2) / 4, a_min=0, a_max=255).astype(np.uint64)
     starts = np.clip(256 * (starts[:, :2] + 2) / 4, a_min=0, a_max=255).astype(np.uint64)
 
     ax.imshow(big_sdf[::-1])
-
+    '''
     for goal, start in zip(goals, starts):
         plt.plot(goal[0], 255 - goal[1], marker='o', color="red", linewidth=2)
         plt.plot(start[0], 255 - start[1], marker='o', color="green", linewidth=2)
         plt.plot([start[0], goal[0]], [255 - start[1], 255 - goal[1]], color='b', alpha=0.5)
 
     plt.show()
-
+    '''
 
 def visualise_trajectories(starts, goals, trajectories, sdf, name):
     import matplotlib.pyplot as plt
     import numpy as np
     from cv2 import resize
-    fig, ax = plt.subplots(1, 1)
+    #fig, ax = plt.subplots(1, 1)
     big_sdf = resize(sdf, (256, 256))
     goals = np.clip(256 * (goals[:, :2] + 2) / 4, a_min=0, a_max=255).astype(np.uint64)
     starts = np.clip(256 * (starts[:, :2] + 2) / 4, a_min=0, a_max=255).astype(np.uint64)
-
+    '''
     ax.imshow(big_sdf[::-1])
     for goal, start, trajs in zip(goals, starts, trajectories):
         plt.plot(goal[0], 255 - goal[1], marker='x', color="red", linewidth=2)
@@ -484,7 +484,7 @@ def visualise_trajectories(starts, goals, trajectories, sdf, name):
             ax.plot(positions_idx[i, :, 0], 255 - positions_idx[i, :, 1], linewidth=1, alpha=0.5)
 
     fig.savefig(name)
-
+    '''
 
 def index_sdf(sdf, indices):
     device = sdf.device
