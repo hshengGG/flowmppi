@@ -89,13 +89,14 @@ class FlowActionSampler(BaseActionSampler):
 
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
 
-
+        
         line83_start = time.time()
-        log_qu = self.flow.log_prob(u.reshape(B * N, -1).detach(), context=context_n_samples)
+        #log_qu = self.flow.log_prob(u.reshape(B * N, -1).detach(), context=context_n_samples)
+        log_qu = 0
         line83_end = time.time()
         self.logqu_sample_time = line83_end - line83_start
         self.logqu_sample_times.append(self.logqu_sample_time)
-
+        
 
         context_net_out['Wj'] = None
         context_net_out['reg'] = None
@@ -106,7 +107,8 @@ class FlowActionSampler(BaseActionSampler):
         # clip u so not super large
         u = torch.clamp(u, -100, 100)
 
-        return u.reshape(B, N, self.H, self.du), log_qu.reshape(B, N), context_net_out
+        #return u.reshape(B, N, self.H, self.du), log_qu.reshape(B, N), context_net_out
+        return u.reshape(B, N, self.H, self.du), 0, context_net_out
 
     def likelihood(self, u, start, goal, environment, cost_params=None, z_environment=None, reconstruct=False):
         # assume that we may have multiple samples per environments, i.e. u is shape N x B x H x du

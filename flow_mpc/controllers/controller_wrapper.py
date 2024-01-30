@@ -179,10 +179,9 @@ class MPCController:
 
     def step(self, state, project=False):
         
-        step_start = time.time()
+        step_function_start = time.time()
         tstate = torch.from_numpy(state).to(device=self.device).reshape(1, -1).float()
         project_time = 0
-        diff = 0
         vae_time = 0
         flow_time = 0
         loss_time = 0
@@ -191,7 +190,7 @@ class MPCController:
         project_total = 0
         if project:
             start_time=time.time()
-            vae_time, flow_time, loss_time, backward_time, optimiser_time, project_total = self.project_imagined_environment(state, 1)
+            self.project_imagined_environment(state, 1)
             end_time = time.time()
             project_time = end_time-start_time
             # self.random_shooting_best_env(state)
@@ -229,31 +228,52 @@ class MPCController:
 
         # Step will sometimes fail due to some stupid numerics (bad samples) -- this is a hack but it seems to be rare
         # enough that it is OK
-        U, forward_NF_time, reverse_NF_time, cost_time = self.controller.step(tstate)
-        print("--------------------printing U------------------")
-        print(f"{U}\n")
+        U = self.controller.step(tstate)
+        #print("--------------------printing U------------------")
+        #print(f"{U}\n")
         # return first action from sequence, and entire action sequence
 
-        step_end = time.time()
-        
+        step_function_end = time.time()
+        self.step_time = step_function_end - step_function_start
+
+
+
+        forward_NF_percent = self.forward_NF_time/step_time * 100
+        reverse_NF_percent = self.reverse_NF_time/step_time * 100
+        cost_percent = self.cost_time/step_time * 100
+        #project_percent = project_time/step_time * 100
+
+        log_h_percent = self.log_h_time/self.total_project_time * 100
+        action_sample_percent = self.action_sample_time/self.total_project_time * 100
+        loss_percent = self.loss_time/self.total_project_time * 100
+        gradient_percent = self.gradient_time/self.total_project_time * 100
+        forward_percent = self.action_sampler.forward_time/self.flow_time * 100
+        logqu_sample_percent = self.action_sampler.logqu_sample_time/flow_time * 100
+        logqu_like_percent = self.action_sampler.logqu_like_time/flow_time * 100
+        horizon_percent = self.loss_fn.horizon_time/loss_time * 100
+
+
         print("--------------------------------------------------------")
-        forward_NF_percent = forward_NF_time/(step_end - step_start) * 100
-        print(f"Time for forward NF is {forward_NF_time}; The percentage is {forward_NF_percent}%")
-        reverse_NF_percent = reverse_NF_time/(step_end - step_start) * 100
-        print(f"Time for reverse NF is {reverse_NF_time}; The percentage is {reverse_NF_percent}%")
-        cost_percent = cost_time/(step_end - step_start) * 100
-        print(f"Time for Cost function is {cost_time}; The percentage is {cost_percent}%")
-        project_percent = project_time/(step_end - step_start) * 100
-        print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
+        print(f"Time for MPPI reverse flow is {self.forward_NF_time}; The percentage is {forward_NF_percent}%")
+        print(f"Time for MPPI forward flow is {self.reverse_NF_time}; The percentage is {reverse_NF_percent}%")
+        print(f"Time for Cost function is {self.cost_time}; The percentage is {cost_percent}%")
+	#commented out because this is duplicate with total_project_time
+        #print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
+	#print("--------------------------------------------------------")
+        print(f"Time for log_h is {self.log_h_time}; The percentage/projection is {log_h_percent}%")
+        print(f"Time for flow is {self.action_sample_time}; The percentage is {action_sample_percent}%")
+        print(f"Time for def compute_loss() is {self.loss_time}; The percentage/projection is {loss_percent}%")
+        print(f"Time for gradient is {self.gradient_time}; The percentage/projection is {gradient_percent}%")        
+	print(f"Time for projection reverse flow is {self.action_sampler.forward_time}; The percentage/flow is {forward_percent}%")
+        print(f"Time for logqu_sample/flow is {self.action_sampler.logqu_sample_time}; The percentage/flow is {logqu_sample_percent}%")
+        print(f"Time for logqu_likelihood/flow is {self.action_sampler.logqu_like_time}; The percentage/flow is {logqu_like_percent}%")
+        print(f"Time for horizon/loss is {self.loss_fn.horizon_time}; The percentage/loss is {horizon_percent}%")
+        print(f"Total Projection Time is {self.total_project_time}")
+
         
-        '''
-	diff_percent = diff/project_time * 100
-        print(f"Time for part of projection function is {diff}; The percentage is {diff_percent}%")
-        '''
-        step_total = step_end-step_start
-        other_code_time = step_end - step_start - project_time - forward_NF_time - reverse_NF_time - cost_time
-        other_percent = other_code_time/(step_end - step_start) * 100
-        print(f"Time for other code in step function is {other_code_time}; The percentage is {other_percent}%")
+        #other_code_time = step_end - step_start - project_time - forward_NF_time - reverse_NF_time - cost_time
+        #other_percent = other_code_time/(step_end - step_start) * 100
+        #print(f"Time for other code in step function is {other_code_time}; The percentage is {other_percent}%")
         
         
         return U[0].detach().cpu().numpy(), self.controller.best_K_U.detach().cpu().numpy(), U.detach().cpu().numpy(), forward_NF_time, reverse_NF_time, cost_time, project_time, vae_time, flow_time, loss_time, backward_time, optimiser_time, step_total, project_total
@@ -288,7 +308,7 @@ class MPCController:
 
     def project_imagined_environment(self, state, num_iters, name=None):
         total_start = time.time()
-        loss_fn = SVIMPC_LossFcn(self.generative_model, False, use_grad=self.use_true_grad)
+        self.loss_fn = SVIMPC_LossFcn(self.generative_model, False, use_grad=self.use_true_grad)
         lr = 1e-2
         
         z_env = torch.nn.Parameter(self.z_env[0].unsqueeze(0).clone())
@@ -350,7 +370,7 @@ class MPCController:
         #iter_start_time = time.time()
         #print(f"iteration count: {num_iters}")
         for iter in range(num_iters):
-            action_start = time.time()
+            actio_sample_start = time.time()
             U, log_qU, context_dict = self.action_sampler(states,
                                                           goals,
                                                           environment=None,
@@ -358,7 +378,7 @@ class MPCController:
                                                           cost_params=self.cost_params,
                                                           N=num_samples,
                                                           sigma=sigma)
-            action_end = time.time()
+            action_sample_end = time.time()
             vae_start = time.time()
             log_p_env = self.action_sampler.environment_encoder.vae.prior.log_prob(z_env).sum(dim=1)
             vae_end = time.time()
@@ -370,9 +390,9 @@ class MPCController:
                                                 log_p_env, None,
                                                 alpha=alpha, beta=beta, kappa=kappa, normalize=True)
             loss_end = time.time()
-            backward_start = time.time()
+            gradient_start = time.time()
             loss_dict['total_loss'].backward()
-            backward_end = time.time()
+            gradient_end = time.time()
             # else:
             # loss = -kappa * log_p_env.sum() / np.prod(self.sdf.shape[1:])
             # loss.backward()
@@ -381,38 +401,17 @@ class MPCController:
             optimiser.step()
             optimiser.zero_grad()
             total_end = time.time()
-            total_time = total_end - total_start
-            flow_time = action_end - action_start
-            vae_time = vae_end - vae_start
-            loss_time = loss_end - loss_start
-            backward_time = backward_end - backward_start
-            optimiser_time = total_time - flow_time - vae_time - loss_time - backward_time
-            print("--------------------------------------------------------")
-            vae_percent = vae_time/total_time * 100
-            print(f"Time for VAE is {vae_time}; The percentage is {vae_percent}%")
-            flow_percent = flow_time/total_time * 100
-            print(f"Time for flow is {flow_time}; The percentage is {flow_percent}%")
-            loss_percent = loss_time/total_time * 100
-            print(f"Time for loss is {loss_time}; The percentage is {loss_percent}%")
-            backward_percent = backward_time/total_time * 100
-            print(f"Time for backward is {backward_time}; The percentage is {backward_percent}%")
-            opt_percent = optimiser_time/total_time * 100
-            print(f"Time for opt is {optimiser_time}; The percentage is {opt_percent}%")
-            grad_percent = loss_fn.grad_time/total_time * 100
-            print(f"Time for gradient is {loss_fn.grad_time}; The percentage is {grad_percent}%")
-            forward_percent = self.action_sampler.forward_time/flow_time * 100
-            print(f"Time for forward/flow is {self.action_sampler.forward_time}; The percentage is {forward_percent}%")
-            logqu_sample_percent = self.action_sampler.logqu_sample_time/flow_time * 100
-            print(f"Time for logqu_sample/flow is {self.action_sampler.logqu_sample_time}; The percentage is {logqu_sample_percent}%")
-            logqu_like_percent = self.action_sampler.logqu_like_time/flow_time * 100
-            print(f"Time for logqu_likelihood/flow is {self.action_sampler.logqu_like_time}; The percentage is {logqu_like_percent}%")
-            horizon_percent = loss_fn.horizon_time/loss_fn.grad_time * 100
-            print(f"Time for horizon/grad is {loss_fn.horizon_time}; The percentage is {horizon_percent}%")
-            print(f"Total Time is {total_time}")
+            self.total_project_time = total_end - total_start
 
+            self.log_h_time = vae_end - vae_start
+            self.action_sample_time = action_sample_end - action_sample_start
+	    self.loss_time = loss_end - loss_start
+            self.gradient_time = gradient_end - gradient_start
+            #optimiser_time = total_time - flow_time - vae_time - loss_time - backward_time
+            #print(f"Time for opt is {optimiser_time}; The percentage/projection is {opt_percent}%")
+            #grad_percent = loss_fn.grad_time/total_time * 100
+            #print(f"Time for gradient is {loss_fn.grad_time}; The percentage is {grad_percent}%"
             
-
-
         #iter_end_time = time.time()
         #diff_time = iter_end_time - iter_start_time
         with torch.no_grad():
@@ -438,7 +437,7 @@ class MPCController:
             visualise_trajectories(states[0].detach().unsqueeze(0).cpu().numpy(),
                                    goals[0].detach().unsqueeze(0).cpu().numpy(),
                                    X.detach().cpu().unsqueeze(0).numpy(), self.raw_sdf, f'{name}_after.png')
-        return vae_time, flow_time, loss_time, backward_time, optimiser_time, total_time
+        #return vae_time, flow_time, loss_time, backward_time, optimiser_time, total_time
         # print('Deviation from original z', torch.linalg.norm(self.z_env - self.og_z_env))
 
     def load_model(self, model_path):

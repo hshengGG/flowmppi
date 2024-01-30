@@ -81,6 +81,7 @@ class SVIMPC_LossFcn:
                                                   environment_grad, alpha, beta, plot=plot)
         else:
             start_t = time.time()
+            print("----------running grad free loss---------------\n")
             loss, metadata = self.grad_free_loss(U, log_qU, starts, goals, environments,
                                                  cost_params, alpha, beta, prior_weights=prior_weights,
                                                  plot=plot, normalize=normalize)
