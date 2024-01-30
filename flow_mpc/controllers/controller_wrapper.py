@@ -248,9 +248,9 @@ class MPCController:
 
 
         print("--------------------------------------------------------")
-        print(f"Time for MPPI reverse flow is {self.forward_NF_time}; The percentage is {forward_NF_percent}%")
-        print(f"Time for MPPI forward flow is {self.reverse_NF_time}; The percentage is {reverse_NF_percent}%")
-        print(f"Time for Cost function is {self.cost_time}; The percentage is {cost_percent}%")
+        print(f"Time for MPPI reverse flow is {self.controller.forward_NF_time}; The percentage is {forward_NF_percent}%")
+        print(f"Time for MPPI forward flow is {self.controller.reverse_NF_time}; The percentage is {reverse_NF_percent}%")
+        print(f"Time for Cost function is {self.controller.cost_time}; The percentage is {cost_percent}%")
 	#commented out because this is duplicate with total_project_time
         #print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
 	#print("--------------------------------------------------------")
