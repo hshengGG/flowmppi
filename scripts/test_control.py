@@ -107,6 +107,9 @@ def create_animation(start, goal, sdf, trajectories, planned_trajectories, proje
     return ani
 '''
 
+def Average(array_in):
+    return sum(array_in)/len(array_in)
+
 def save_visualisation_data(start, goal, sdf, trajectories, planning_trajectories, env_no, controller, env_type, name):
     fname = f'{FLOW_MPC_ROOT}/figures/{name}/control_test/{controller}/{env_type}/env_{env_no}_vis.npz'
     data = {}
@@ -224,22 +227,23 @@ def test_controller(env, controller, T=50):
     print(f"the time for projecting imagined env is {project_imag_time}; percent is {project_imag_percentage}")
     with open('perf_double_integrator.csv', 'w') as file:
         assert(len(step_times) == len(forward_NF_times) and len(forward_NF_times) == len(log_qu_times))
+        assert(len(step_times) == len(reverse_NF_times) and len(forward_NF_times) == len(loss_times))
         writer = csv.writer(file)
         writer.writerow(["One episode breakdown"])
-        writer.writerow(step_times)
-        writer.writerow(forward_NF_times)
-        writer.writerow(reverse_NF_times)
-        writer.writerow(cost_times)
+        writer.writerow(Average(step_times))
+        writer.writerow(Average(forward_NF_times))
+        writer.writerow(Average(reverse_NF_times))
+        writer.writerow(Average(cost_times))
         #writer.writerow(project_times)
         #writer.writerow(["Projection part breakdown"])
         #writer.writerow(project_totals)
         writer.writerow([])
-        writer.writerow(log_h_times)
-        writer.writerow(action_sample_times)
-        writer.writerow(loss_times)
-        writer.writerow(gradient_times)
-        writer.writerow(project_reverse_times)
-        writer.writerow(log_qu_times)
+        writer.writerow(Average(log_h_times))
+        writer.writerow(Average(action_sample_times))
+        writer.writerow(Average(loss_times))
+        writer.writerow(Average(gradient_times))
+        writer.writerow(Average(project_reverse_times))
+        writer.writerow(Average(log_qu_times))
         #writer.writerow(optimiser_times)
         #writer.writerow(controller.action_sampler.forward_times)
         #writer.writerow(controller.action_sampler.logqu_like_times)
