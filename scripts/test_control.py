@@ -223,6 +223,7 @@ def test_controller(env, controller, T=50):
     project_imag_percentage = project_imag_time/(total_end-total_start)
     print(f"the time for projecting imagined env is {project_imag_time}; percent is {project_imag_percentage}")
     with open('perf_double_integrator.csv', 'w') as file:
+        assert(len(step_times) == len(forward_NF_times) and len(forward_NF_times) == len(log_qu_times))
         writer = csv.writer(file)
         writer.writerow(["One episode breakdown"])
         writer.writerow(step_times)
