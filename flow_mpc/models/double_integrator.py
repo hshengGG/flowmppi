@@ -2,6 +2,8 @@ import torch
 from torch import nn
 from flow_mpc.models.utils import CollisionFcn
 from flow_mpc.models.generative_model import GenerativeModel
+import race_car.forward
+
 
 
 class DoubleIntegratorDynamics(nn.Module):
@@ -42,6 +44,7 @@ class DoubleIntegratorDynamics(nn.Module):
             raise ValueError('dim must either be 2 or 3')
 
     def forward(self, state, control): #changed from action to control
+        return race_car.forward(state,control)
         return self.batched_dynamics(state, control)
         ''' unroll state '''
         '''
