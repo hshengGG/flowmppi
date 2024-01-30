@@ -230,8 +230,6 @@ class MPCController:
         step_function_end = time.time()
         self.step_time = step_function_end - step_function_start
 
-
-
         forward_NF_percent = self.controller.forward_NF_time/self.step_time * 100
         reverse_NF_percent = self.controller.reverse_NF_time/self.step_time * 100
         cost_percent = self.controller.cost_time/self.step_time * 100
@@ -241,10 +239,12 @@ class MPCController:
         action_sample_percent = self.action_sample_time/self.total_project_time * 100
         loss_percent = self.loss_time/self.total_project_time * 100
         gradient_percent = self.gradient_time/self.total_project_time * 100
-        forward_percent = self.action_sampler.forward_time/self.action_sample_time * 100
-        logqu_sample_percent = self.action_sampler.logqu_sample_time/self.action_sample_time * 100
+        project_reverse_percent = self.action_sampler.project_reverse_time/self.action_sample_time * 100
+        #logqu_sample_percent = self.action_sampler.logqu_sample_time/self.action_sample_time * 100
         logqu_like_percent = self.action_sampler.logqu_like_time/self.action_sample_time * 100
         horizon_percent = self.loss_fn.horizon_time/self.loss_time * 100
+
+        
 
 
         print("--------------------------------------------------------")
@@ -255,12 +255,11 @@ class MPCController:
         #print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
 	#print("--------------------------------------------------------")
         print(f"Time for log_h is {self.log_h_time}; The percentage/projection is {log_h_percent}%")
-        print(f"Time for flow is {self.action_sample_time}; The percentage is {action_sample_percent}%")
+        print(f"Time for flow is {self.action_sample_time}; The percentage/projection is {action_sample_percent}%")
         print(f"Time for def compute_loss() is {self.loss_time}; The percentage/projection is {loss_percent}%")
         print(f"Time for gradient is {self.gradient_time}; The percentage/projection is {gradient_percent}%")        
-        print(f"Time for projection reverse flow is {self.action_sampler.forward_time}; The percentage/flow is {forward_percent}%")
-        print(f"Time for logqu_sample/flow is {self.action_sampler.logqu_sample_time}; The percentage/flow is {logqu_sample_percent}%")
-        print(f"Time for logqu_likelihood/flow is {self.action_sampler.logqu_like_time}; The percentage/flow is {logqu_like_percent}%")
+        print(f"Time for projection reverse flow is {self.action_sampler.project_reverse_time}; The percentage/flow is {project_reverse_percent}%")
+        print(f"Time for log_qu/flow is {self.action_sampler.logqu_like_time}; The percentage/flow is {logqu_like_percent}%")
         print(f"Time for horizon/loss is {self.loss_fn.horizon_time}; The percentage/loss is {horizon_percent}%")
         print(f"Total Projection Time is {self.total_project_time}")
         print(f"Total Step Time is {self.step_time}")

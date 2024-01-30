@@ -161,14 +161,13 @@ def test_controller(env, controller, T=50):
     forward_NF_times = ["forward_NF_times"]
     reverse_NF_times = ["reverse_NF_times"]
     cost_times = ["cost_times"]
-    #project_times = []
     log_h_times = ["log_h_times"]
     action_sample_times = ["action_sample_times"]
     loss_times = ["compute_loss_times"]
     gradient_times =["gradient_times"]
-    #optimiser_times = []
+    project_reverse_times = ["project_reverse_times"]
+    log_qu_times = ["log_qu_times"]
     step_times = ["step_total_times"] 
-    #project_totals = []
     for i in range(T):
         print(f"episode {i}")
         episode_start = time.time()
@@ -185,7 +184,8 @@ def test_controller(env, controller, T=50):
             loss_times.append(controller.loss_time)
             gradient_times.append(controller.gradient_time)
             step_times.append(controller.step_time)
-            #project_totals.append(project_total)
+            project_reverse_times.append(controller.action_sampler.project_reverse_time)
+            log_qu_times.append(controller.action_sampler.logqu_like_time)
             torch.cuda.synchronize()
             etime = time.time()
             
@@ -237,6 +237,8 @@ def test_controller(env, controller, T=50):
         writer.writerow(action_sample_times)
         writer.writerow(loss_times)
         writer.writerow(gradient_times)
+        writer.writerow(project_reverse_times)
+        writer.writerow(log_qu_times)
         #writer.writerow(optimiser_times)
         #writer.writerow(controller.action_sampler.forward_times)
         #writer.writerow(controller.action_sampler.logqu_like_times)

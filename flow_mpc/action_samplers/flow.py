@@ -80,18 +80,18 @@ class FlowActionSampler(BaseActionSampler):
         forward_start = time.time()
         u = self.flow.sample(num_samples=N, context=context)
         forward_end = time.time()
-        self.forward_time = forward_end - forward_start
+        self.project_reverse_time = forward_end - forward_start
         #self.forward_times.append(self.forward_time)
 
 
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
 
         
-        line83_start = time.time()
+        #line83_start = time.time()
         #log_qu = self.flow.log_prob(u.reshape(B * N, -1).detach(), context=context_n_samples)
         log_qu = 0
-        line83_end = time.time()
-        self.logqu_sample_time = line83_end - line83_start
+        #line83_end = time.time()
+        #self.logqu_sample_time = line83_end - line83_start
         #self.logqu_sample_times.append(self.logqu_sample_time)
         
 

@@ -24,7 +24,6 @@ class MPPI:
         self.ref_z = torch.randn(self.H, self.du, device=self.device)
         
     def step(self, x):
-        print(range(self.iterations))
         for iter in range(self.iterations):
             # Sample peturbations
             noise = torch.randn(self.N, self.H, self.du, device=self.device)
