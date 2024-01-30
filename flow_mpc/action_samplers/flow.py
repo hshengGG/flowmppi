@@ -68,9 +68,6 @@ class FlowActionSampler(BaseActionSampler):
         self.register_buffer('prior_mu', torch.tensor(0.0))
         self.register_buffer('prior_scale', torch.tensor(1.0))
         
-        self.forward_times = []
-        self.logqu_sample_times = []
-        self.logqu_like_times = []
 
     def sample(self, start, goal, environment, cost_params=None,
                N=1, z_environment=None, reconstruct=False, z_only=False):
@@ -84,7 +81,7 @@ class FlowActionSampler(BaseActionSampler):
         u = self.flow.sample(num_samples=N, context=context)
         forward_end = time.time()
         self.forward_time = forward_end - forward_start
-        self.forward_times.append(self.forward_time)
+        #self.forward_times.append(self.forward_time)
 
 
         context_n_samples = context.unsqueeze(1).repeat(1, N, 1).reshape(N * B, -1)
@@ -95,7 +92,7 @@ class FlowActionSampler(BaseActionSampler):
         log_qu = 0
         line83_end = time.time()
         self.logqu_sample_time = line83_end - line83_start
-        self.logqu_sample_times.append(self.logqu_sample_time)
+        #self.logqu_sample_times.append(self.logqu_sample_time)
         
 
         context_net_out['Wj'] = None
@@ -125,7 +122,7 @@ class FlowActionSampler(BaseActionSampler):
         log_qu = self.flow.log_prob(u.reshape(N * B, H * du), context=context_n_samples)
         line109_end = time.time()
         self.logqu_like_time = line109_end - line109_start
-        self.logqu_like_times.append(self.logqu_like_time)
+        #self.logqu_like_times.append(self.logqu_like_time)
 
         if self.training and self.flow_type == 'ffjord':
             context_dict['reg'] = self.flow.chain[0].regularization_states[1:]

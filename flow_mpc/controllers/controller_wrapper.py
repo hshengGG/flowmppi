@@ -232,18 +232,18 @@ class MPCController:
 
 
 
-        forward_NF_percent = self.forward_NF_time/self.step_time * 100
-        reverse_NF_percent = self.reverse_NF_time/self.step_time * 100
-        cost_percent = self.cost_time/self.step_time * 100
+        forward_NF_percent = self.controller.forward_NF_time/self.step_time * 100
+        reverse_NF_percent = self.controller.reverse_NF_time/self.step_time * 100
+        cost_percent = self.controller.cost_time/self.step_time * 100
         #project_percent = project_time/step_time * 100
 
         log_h_percent = self.log_h_time/self.total_project_time * 100 # vae
         action_sample_percent = self.action_sample_time/self.total_project_time * 100
         loss_percent = self.loss_time/self.total_project_time * 100
         gradient_percent = self.gradient_time/self.total_project_time * 100
-        forward_percent = self.action_sampler.forward_time/self.flow_time * 100
-        logqu_sample_percent = self.action_sampler.logqu_sample_time/self.flow_time * 100
-        logqu_like_percent = self.action_sampler.logqu_like_time/self.flow_time * 100
+        forward_percent = self.action_sampler.forward_time/self.action_sample_time * 100
+        logqu_sample_percent = self.action_sampler.logqu_sample_time/self.action_sample_time * 100
+        logqu_like_percent = self.action_sampler.logqu_like_time/self.action_sample_time * 100
         horizon_percent = self.loss_fn.horizon_time/self.loss_time * 100
 
 

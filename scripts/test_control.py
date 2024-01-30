@@ -176,9 +176,9 @@ def test_controller(env, controller, T=50):
             count += 1
             stime = time.time()
             new_control, control_sequence, _ = controller.step(state, project=controller.project)
-            forward_NF_times.append(controller.forward_NF_time)
-            reverse_NF_times.append(controller.reverse_NF_time)
-            cost_times.append(controller.cost_time)
+            forward_NF_times.append(controller.controller.forward_NF_time)
+            reverse_NF_times.append(controller.controller.reverse_NF_time)
+            cost_times.append(controller.controller.cost_time)
             #project_times.append(controller.project_time)
             log_h_times.append(controller.log_h_time)
             action_sample_times.append(controller.action_sample_time)

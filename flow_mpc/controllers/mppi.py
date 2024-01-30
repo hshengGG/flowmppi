@@ -22,10 +22,7 @@ class MPPI:
         self.K = 100
         self.iterations = iterations
         self.ref_z = torch.randn(self.H, self.du, device=self.device)
-        #self.forward_NF_times = []
-        #self.reverse_NF_times = []
-        #self.cost_times = []
-
+        
     def step(self, x):
         print(range(self.iterations))
         for iter in range(self.iterations):
@@ -108,8 +105,7 @@ class MPPI:
                                            reverse=True)
             action_end = time.time()
         self.reverse_NF_time = action_end - action_start
-        self.reverse_NF_times.append(reverse_NF_time)
-
+        
         return out_U
 
     def reset(self):
