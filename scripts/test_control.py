@@ -161,16 +161,16 @@ def test_controller(env, controller, T=50):
     total_time = 0.0
     count = 0
     cost = 0.0
-    forward_NF_times = ["forward_NF_times"]
-    reverse_NF_times = ["reverse_NF_times"]
-    cost_times = ["cost_times"]
-    log_h_times = ["log_h_times"]
-    action_sample_times = ["action_sample_times"]
-    loss_times = ["compute_loss_times"]
-    gradient_times =["gradient_times"]
-    project_reverse_times = ["project_reverse_times"]
-    log_qu_times = ["log_qu_times"]
-    step_times = ["step_total_times"] 
+    forward_NF_times = []
+    reverse_NF_times = []
+    cost_times = []
+    log_h_times = []
+    action_sample_times = []
+    loss_times = []
+    gradient_times =[]
+    project_reverse_times = []
+    log_qu_times = []
+    step_times = [] 
     for i in range(T):
         print(f"episode {i}")
         episode_start = time.time()
@@ -225,6 +225,28 @@ def test_controller(env, controller, T=50):
     total_end = time.time()
     project_imag_percentage = project_imag_time/(total_end-total_start)
     print(f"the time for projecting imagined env is {project_imag_time}; percent is {project_imag_percentage}")
+    forward_NF_times = Average(forward_NF_times)
+    reverse_NF_times = Average(reverse_NF_times)
+    cost_times = Average(cost_times)
+    log_h_times = Average(log_h_times)
+    action_sample_times = Average(action_sample_times)
+    loss_times = Average(loss_times)
+    gradient_times =Average(gradient_times)
+    project_reverse_times = Average(project_reverse_times)
+    log_qu_times = Average(log_qu_times)
+    step_times = Average(step_times)
+
+    forward_NF_times.insert(0, "forward_NF_times")
+    reverse_NF_times.insert(0, "reverse_NF_times")
+    cost_times.insert(0, "cost_times")
+    log_h_times.insert(0,"log_h_times")
+    action_sample_times.insert(0, "action_sample_times")
+    loss_times.insert(0, "compute_loss_times")
+    gradient_times.insert(0, "gradient_times")
+    project_reverse_times.insert(0, "project_reverse_times")
+    log_qu_times.insert(0, "log_qu_times")
+    step_times.insert(0, "step_total_times")
+    
     with open('perf_quadcoptor.csv', 'w') as file:
         assert(len(step_times) == len(forward_NF_times) and len(forward_NF_times) == len(log_qu_times))
         assert(len(step_times) == len(reverse_NF_times) and len(forward_NF_times) == len(loss_times))
