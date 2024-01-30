@@ -22,12 +22,12 @@ class MPPI:
         self.K = 100
         self.iterations = iterations
         self.ref_z = torch.randn(self.H, self.du, device=self.device)
-        self.forward_NF_times = []
-        self.reverse_NF_times = []
-        self.cost_times = []
+        #self.forward_NF_times = []
+        #self.reverse_NF_times = []
+        #self.cost_times = []
 
     def step(self, x):
-	print(range(self.iterations))
+        print(range(self.iterations))
         for iter in range(self.iterations):
             # Sample peturbations
             noise = torch.randn(self.N, self.H, self.du, device=self.device)
@@ -44,7 +44,7 @@ class MPPI:
                 end_time = time.time()
                 self.forward_NF_time = end_time-start_time
                 #appending times to be print out
-                self.forward_NF_times.append(forward_NF_time)
+                #self.forward_NF_times.append(forward_NF_time)
 
                 peturbed_actions[self.N//2:] = self.U.unsqueeze(dim=0) + self.sigma * noise[self.N//2:]
                 action_cost_Z = torch.sum(self.lambda_ * noise * (noise - self.Z), dim=[1, 2])

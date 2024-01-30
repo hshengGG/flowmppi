@@ -158,35 +158,34 @@ def test_controller(env, controller, T=50):
     total_time = 0.0
     count = 0
     cost = 0.0
-    forward_NF_times = []
-    reverse_NF_times = []
-    cost_times = []
-    project_times = []
-    vae_times = []
-    flow_times = []
-    loss_times = []
-    backward_times =[]
-    optimiser_times = []
-    step_totals = [] 
-    project_totals = []
+    forward_NF_times = ["forward_NF_times"]
+    reverse_NF_times = ["reverse_NF_times"]
+    cost_times = ["cost_times"]
+    #project_times = []
+    log_h_times = ["log_h_times"]
+    action_sample_times = ["action_sample_times"]
+    loss_times = ["compute_loss_times"]
+    gradient_times =["gradient_times"]
+    #optimiser_times = []
+    step_times = ["step_total_times"] 
+    #project_totals = []
     for i in range(T):
         print(f"episode {i}")
         episode_start = time.time()
         if not collision_failure:
             count += 1
             stime = time.time()
-            new_control, control_sequence, unneeded, forward_NF_time, reverse_NF_time, cost_time, project_time, vae_time, flow_time, loss_time, backward_time, optimiser_time, step_total, project_total = controller.step(state, project=controller.project)
-            forward_NF_times.append(forward_NF_time)
-            reverse_NF_times.append(reverse_NF_time)
-            cost_times.append(cost_time)
-            project_times.append(project_time)
-            vae_times.append(vae_time)
-            flow_times.append(flow_time)
-            loss_times.append(loss_time)
-            backward_times.append(backward_time)
-            optimiser_times.append(optimiser_time)
-            step_totals.append(step_total)
-            project_totals.append(project_total)
+            new_control, control_sequence, _ = controller.step(state, project=controller.project)
+            forward_NF_times.append(controller.forward_NF_time)
+            reverse_NF_times.append(controller.reverse_NF_time)
+            cost_times.append(controller.cost_time)
+            #project_times.append(controller.project_time)
+            log_h_times.append(controller.log_h_time)
+            action_sample_times.append(controller.action_sample_time)
+            loss_times.append(controller.loss_time)
+            gradient_times.append(controller.gradient_time)
+            step_times.append(controller.step_time)
+            #project_totals.append(project_total)
             torch.cuda.synchronize()
             etime = time.time()
             
@@ -215,8 +214,7 @@ def test_controller(env, controller, T=50):
     control_history = np.asarray(control_history)
     planned_control_sequences = np.asarray(planned_control_sequences)
     failure = collision_failure or not env.at_goal()
-    #print("-------------forward array----------------")
-    #print(forward_NF_times)
+    
     if len(projected_envs) > 0:
         projected_envs = np.asarray(projected_envs)
     else:
@@ -227,23 +225,22 @@ def test_controller(env, controller, T=50):
     with open('perf_double_integrator.csv', 'w') as file:
         writer = csv.writer(file)
         writer.writerow(["One episode breakdown"])
-        writer.writerow(step_totals)
+        writer.writerow(step_times)
         writer.writerow(forward_NF_times)
         writer.writerow(reverse_NF_times)
         writer.writerow(cost_times)
-        writer.writerow(project_times)
-        
-        writer.writerow(["Projection part breakdown"])
-        writer.writerow(project_totals)
-        writer.writerow(vae_times)
-        writer.writerow(flow_times)
+        #writer.writerow(project_times)
+        #writer.writerow(["Projection part breakdown"])
+        #writer.writerow(project_totals)
+        writer.writerow([])
+        writer.writerow(log_h_times)
+        writer.writerow(action_sample_times)
         writer.writerow(loss_times)
-        writer.writerow(backward_times)
-        writer.writerow(optimiser_times)
-        writer.writerow(controller.action_sampler.forward_times)
-        writer.writerow(controller.action_sampler.logqu_like_times)
-
-        writer.writerow(controller.action_sampler.logqu_sample_times)
+        writer.writerow(gradient_times)
+        #writer.writerow(optimiser_times)
+        #writer.writerow(controller.action_sampler.forward_times)
+        #writer.writerow(controller.action_sampler.logqu_like_times)
+        #writer.writerow(controller.action_sampler.logqu_sample_times)
    
     return -cost, state_history, control_history, planned_control_sequences, failure, projected_envs, total_time / count
 

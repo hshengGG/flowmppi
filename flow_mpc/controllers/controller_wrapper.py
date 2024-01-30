@@ -181,18 +181,12 @@ class MPCController:
         
         step_function_start = time.time()
         tstate = torch.from_numpy(state).to(device=self.device).reshape(1, -1).float()
-        project_time = 0
-        vae_time = 0
-        flow_time = 0
-        loss_time = 0
-        backward_time = 0
-        optimiser_time = 0
-        project_total = 0
+
         if project:
-            start_time=time.time()
+            #start_time=time.time()
             self.project_imagined_environment(state, 1)
-            end_time = time.time()
-            project_time = end_time-start_time
+            #end_time = time.time()
+            #project_time = end_time-start_time
             # self.random_shooting_best_env(state)
         with torch.no_grad():
             #print("---------------")
@@ -238,19 +232,19 @@ class MPCController:
 
 
 
-        forward_NF_percent = self.forward_NF_time/step_time * 100
-        reverse_NF_percent = self.reverse_NF_time/step_time * 100
-        cost_percent = self.cost_time/step_time * 100
+        forward_NF_percent = self.forward_NF_time/self.step_time * 100
+        reverse_NF_percent = self.reverse_NF_time/self.step_time * 100
+        cost_percent = self.cost_time/self.step_time * 100
         #project_percent = project_time/step_time * 100
 
-        log_h_percent = self.log_h_time/self.total_project_time * 100
+        log_h_percent = self.log_h_time/self.total_project_time * 100 # vae
         action_sample_percent = self.action_sample_time/self.total_project_time * 100
         loss_percent = self.loss_time/self.total_project_time * 100
         gradient_percent = self.gradient_time/self.total_project_time * 100
         forward_percent = self.action_sampler.forward_time/self.flow_time * 100
-        logqu_sample_percent = self.action_sampler.logqu_sample_time/flow_time * 100
-        logqu_like_percent = self.action_sampler.logqu_like_time/flow_time * 100
-        horizon_percent = self.loss_fn.horizon_time/loss_time * 100
+        logqu_sample_percent = self.action_sampler.logqu_sample_time/self.flow_time * 100
+        logqu_like_percent = self.action_sampler.logqu_like_time/self.flow_time * 100
+        horizon_percent = self.loss_fn.horizon_time/self.loss_time * 100
 
 
         print("--------------------------------------------------------")
@@ -264,11 +258,12 @@ class MPCController:
         print(f"Time for flow is {self.action_sample_time}; The percentage is {action_sample_percent}%")
         print(f"Time for def compute_loss() is {self.loss_time}; The percentage/projection is {loss_percent}%")
         print(f"Time for gradient is {self.gradient_time}; The percentage/projection is {gradient_percent}%")        
-	print(f"Time for projection reverse flow is {self.action_sampler.forward_time}; The percentage/flow is {forward_percent}%")
+        print(f"Time for projection reverse flow is {self.action_sampler.forward_time}; The percentage/flow is {forward_percent}%")
         print(f"Time for logqu_sample/flow is {self.action_sampler.logqu_sample_time}; The percentage/flow is {logqu_sample_percent}%")
         print(f"Time for logqu_likelihood/flow is {self.action_sampler.logqu_like_time}; The percentage/flow is {logqu_like_percent}%")
         print(f"Time for horizon/loss is {self.loss_fn.horizon_time}; The percentage/loss is {horizon_percent}%")
         print(f"Total Projection Time is {self.total_project_time}")
+        print(f"Total Step Time is {self.step_time}")
 
         
         #other_code_time = step_end - step_start - project_time - forward_NF_time - reverse_NF_time - cost_time
@@ -276,7 +271,7 @@ class MPCController:
         #print(f"Time for other code in step function is {other_code_time}; The percentage is {other_percent}%")
         
         
-        return U[0].detach().cpu().numpy(), self.controller.best_K_U.detach().cpu().numpy(), U.detach().cpu().numpy(), forward_NF_time, reverse_NF_time, cost_time, project_time, vae_time, flow_time, loss_time, backward_time, optimiser_time, step_total, project_total
+        return U[0].detach().cpu().numpy(), self.controller.best_K_U.detach().cpu().numpy(), U.detach().cpu().numpy()
 
     def random_shooting_best_env(self, state):
         num_envs = 100
@@ -370,7 +365,7 @@ class MPCController:
         #iter_start_time = time.time()
         #print(f"iteration count: {num_iters}")
         for iter in range(num_iters):
-            actio_sample_start = time.time()
+            action_sample_start = time.time()
             U, log_qU, context_dict = self.action_sampler(states,
                                                           goals,
                                                           environment=None,
@@ -384,7 +379,7 @@ class MPCController:
             vae_end = time.time()
             # if self.project_use_reg:
             loss_start = time.time()
-            loss_dict, _ = loss_fn.compute_loss(U, log_qU, states, goals,
+            loss_dict, _ = self.loss_fn.compute_loss(U, log_qU, states, goals,
                                                 self.sdf[0],
                                                 self.sdf_grad[0], self.cost_params,
                                                 log_p_env, None,
@@ -405,8 +400,8 @@ class MPCController:
 
             self.log_h_time = vae_end - vae_start
             self.action_sample_time = action_sample_end - action_sample_start
-	    self.loss_time = loss_end - loss_start
-            self.gradient_time = gradient_end - gradient_start
+            self.loss_time = loss_end - loss_start
+            self.gradient_time = gradient_end - gradient_start # backward_time
             #optimiser_time = total_time - flow_time - vae_time - loss_time - backward_time
             #print(f"Time for opt is {optimiser_time}; The percentage/projection is {opt_percent}%")
             #grad_percent = loss_fn.grad_time/total_time * 100
