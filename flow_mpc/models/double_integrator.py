@@ -2,7 +2,7 @@ import torch
 from torch import nn
 from flow_mpc.models.utils import CollisionFcn
 from flow_mpc.models.generative_model import GenerativeModel
-import race_car.forward
+#import race_car.forward
 
 
 
