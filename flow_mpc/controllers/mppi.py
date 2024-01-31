@@ -39,6 +39,9 @@ class MPPI:
     		    
                 end_time = time.time()
                 self.forward_NF_time = end_time-start_time
+                #To Do
+                # should be reverse
+
                 #appending times to be print out
                 #self.forward_NF_times.append(forward_NF_time)
 
@@ -104,6 +107,8 @@ class MPPI:
                                            reverse=True)
             action_end = time.time()
         self.reverse_NF_time = action_end - action_start
+        #To Do
+        #should be forward
         
         return out_U
 

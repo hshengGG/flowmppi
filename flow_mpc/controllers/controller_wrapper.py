@@ -242,6 +242,7 @@ class MPCController:
         project_reverse_percent = self.action_sampler.project_reverse_time/self.action_sample_time * 100
         #logqu_sample_percent = self.action_sampler.logqu_sample_time/self.action_sample_time * 100
         logqu_like_percent = self.action_sampler.logqu_like_time/self.action_sample_time * 100
+        # log_qu is actually project forward
         horizon_percent = self.loss_fn.horizon_time/self.loss_time * 100
 
         
@@ -251,15 +252,20 @@ class MPCController:
         print(f"Time for MPPI reverse flow is {self.controller.forward_NF_time}; The percentage is {forward_NF_percent}%")
         print(f"Time for MPPI forward flow is {self.controller.reverse_NF_time}; The percentage is {reverse_NF_percent}%")
         print(f"Time for Cost function is {self.controller.cost_time}; The percentage is {cost_percent}%")
-	#commented out because this is duplicate with total_project_time
+	    #commented out because this is duplicate with total_project_time
         #print(f"Time for projection function is {project_time}; The percentage is {project_percent}%")
-	#print("--------------------------------------------------------")
+	    #print("--------------------------------------------------------")
         print(f"Time for log_h is {self.log_h_time}; The percentage/projection is {log_h_percent}%")
         print(f"Time for flow is {self.action_sample_time}; The percentage/projection is {action_sample_percent}%")
-        print(f"Time for def compute_loss() is {self.loss_time}; The percentage/projection is {loss_percent}%")
+        print(f"Time for project cost time is {self.loss_time}; The percentage/projection is {loss_percent}%")
+        # To DO
+        # project cost times
+        # calculate horizon instead of compute_loss()
         print(f"Time for gradient is {self.gradient_time}; The percentage/projection is {gradient_percent}%")        
         print(f"Time for projection reverse flow is {self.action_sampler.project_reverse_time}; The percentage/flow is {project_reverse_percent}%")
         print(f"Time for log_qu/flow is {self.action_sampler.logqu_like_time}; The percentage/flow is {logqu_like_percent}%")
+        # log_qu is actually project forward
+        # change it as some time
         print(f"Time for horizon/loss is {self.loss_fn.horizon_time}; The percentage/loss is {horizon_percent}%")
         print(f"Total Projection Time is {self.total_project_time}")
         print(f"Total Step Time is {self.step_time}")
@@ -395,17 +401,11 @@ class MPCController:
             optimiser.step()
             optimiser.zero_grad()
             total_end = time.time()
-            self.total_project_time = total_end - total_start
-
-            self.log_h_time = vae_end - vae_start
-            self.action_sample_time = action_sample_end - action_sample_start
-            self.loss_time = loss_end - loss_start
-            self.gradient_time = gradient_end - gradient_start # backward_time
-            #optimiser_time = total_time - flow_time - vae_time - loss_time - backward_time
-            #print(f"Time for opt is {optimiser_time}; The percentage/projection is {opt_percent}%")
-            #grad_percent = loss_fn.grad_time/total_time * 100
-            #print(f"Time for gradient is {loss_fn.grad_time}; The percentage is {grad_percent}%"
-            
+        self.total_project_time = total_end - total_start
+        self.log_h_time = vae_end - vae_start
+        self.action_sample_time = action_sample_end - action_sample_start
+        self.loss_time = loss_end - loss_start
+        self.gradient_time = gradient_end - gradient_start # backward_time       
         #iter_end_time = time.time()
         #diff_time = iter_end_time - iter_start_time
         with torch.no_grad():
