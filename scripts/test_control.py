@@ -254,7 +254,7 @@ def test_controller(env, controller, T=50):
     log_qu_times = ["log_qu_times", log_qu_times]
     step_times = ["step_total_times", step_times]
 
-    with open('perf_quadcoptor.csv', 'w') as file:
+    with open('perf_di.csv', 'w') as file:
         writer = csv.writer(file)
         #writer.writerow(["One episode breakdown"])
         writer.writerow(step_times)
