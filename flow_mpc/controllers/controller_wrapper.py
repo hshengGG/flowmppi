@@ -98,7 +98,7 @@ class MPCController:
 
     def cost(self, x, U):
         N, H, du = U.shape
-        print("will compute horizon\n")
+        print("will compute horizon in cost\n")
         log_pCost, log_pU, X = self.generative_model(
             x.unsqueeze(0).repeat(1, N, 1),
             self.goal.unsqueeze(0).repeat(1, N, 1),
@@ -183,7 +183,7 @@ class MPCController:
         tstate = torch.from_numpy(state).to(device=self.device).reshape(1, -1).float()
 
         if project:
-            print("will compute horizon\n")
+            print("will compute horizon in project\n")
             self.project_imagined_environment(state, 1)
            
             # self.random_shooting_best_env(state)
@@ -201,7 +201,7 @@ class MPCController:
                 )
 
                 U = torch.cat((U.reshape(-1, self.H, self.du), self.controller.U.reshape(1, self.H, self.du)), dim=0)
-                print("will compute horizon\n")
+                print("will compute horizon in step\n")
                 log_pCost, log_pU, _ = self.generative_model(
                     tstate[-N:],
                     self.goal[-N:],
