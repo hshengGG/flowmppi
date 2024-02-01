@@ -243,8 +243,8 @@ def test_controller(env, controller, T=50):
     step_times = Average(step_times)
 
     #make a note for it
-    forward_NF_times = ["forward_NF_times", forward_NF_times]
-    reverse_NF_times = ["reverse_NF_times", reverse_NF_times]
+    forward_NF_times = ["reverse_NF_times", forward_NF_times]
+    reverse_NF_times = ["forward_NF_times", reverse_NF_times]
     cost_times= ["cost_times", cost_times]
     log_h_times = ["log_h_times", log_h_times]
     action_sample_times = ["action_sample_times", action_sample_times]
