@@ -78,7 +78,6 @@ class GenerativeModel(nn.Module):
         x = start
         start = time.time()
         duration = 0
-        start_time=time.time()
         for t in range(H):
             action = action_sequence[:, :, t]
             if X is None:
@@ -92,8 +91,6 @@ class GenerativeModel(nn.Module):
                 if not self.combined_cost:
                     goal_logprob += self.goal_log_likelihood(x, goal, vel_penalty)
                     # collision_logprob += self.collision_log_likelihood(x, sdf, sdf_grad)
-        end_time = time.time()
-        print("Time elapsed for Horizon: %f" % (end_time-start_time))
         if X is None:
             X = torch.stack(x_sequence, dim=2)  # B x N x T x dx
         if compute_costs:
