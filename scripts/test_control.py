@@ -243,20 +243,21 @@ def test_controller(env, controller, T=50):
     step_times = Average(step_times)
 
     #make a note for it
-    forward_NF_times = ["reverse_NF_times", forward_NF_times]
-    reverse_NF_times = ["forward_NF_times", reverse_NF_times]
-    cost_times= ["cost_times", cost_times]
-    log_h_times = ["log_h_times", log_h_times]
-    action_sample_times = ["action_sample_times", action_sample_times]
-    horizon_times = ["horizon_times", horizon_times] #grad_free_loss line 194 traner.py
-    gradient_times =["gradient_times", gradient_times] # controller wrapper line 394
-    project_reverse_times = ["project_reverse_times", project_reverse_times]
-    log_qu_times = ["log_qu_times", log_qu_times]
-    step_times = ["step_total_times", step_times]
+    forward_NF_times = ["reverse_NF", forward_NF_times]
+    reverse_NF_times = ["forward_NF", reverse_NF_times]
+    cost_times= ["cost", cost_times]
+    log_h_times = ["log_h", log_h_times]
+    action_sample_times = ["action_sample", action_sample_times]
+    horizon_times = ["horizon", horizon_times] #grad_free_loss line 194 traner.py
+    gradient_times =["gradient", gradient_times] # controller wrapper line 394
+    project_reverse_times = ["project_reverse", project_reverse_times]
+    log_qu_times = ["log_qu", log_qu_times]
+    step_times = ["step_total", step_times]
 
-    with open('perf_di.csv', 'w') as file:
+    with open('perf_race_car.csv', 'w') as file:
         writer = csv.writer(file)
         #writer.writerow(["One episode breakdown"])
+        writer.writerow(['Label', 'Data'])
         writer.writerow(step_times)
         writer.writerow(forward_NF_times)
         writer.writerow(reverse_NF_times)
