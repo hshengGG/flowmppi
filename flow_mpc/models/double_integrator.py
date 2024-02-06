@@ -82,7 +82,7 @@ class DoubleIntegratorDynamics(nn.Module):
         F_yF = yF_compare * (-mu*ksi*F_z*torch.sign(alpha_R)) + ~yF_compare * (-C*torch.tan(alpha_F) + (C**2*torch.atan2(alpha_F, frand)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_F, frand))) - (C*torch.atan2(alpha_F, frand))**3/(27*(mu*ksi*F_z)**2))
 
         yR_compare = torch.ge(alpha_R, gamma)
-        F_yR = yR_compare*(-mu*ksi*F_z*torch.sign(alpha_R)) + ~yR_compare * (-C*torch.tan(alpha_R) + (C**2*torch.atan2(alpha_R, frand)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_R, frand)) - (C*torch.atan2(alpha_R, frand))**3/(27*(mu*ksi*F_z)**2) )
+        F_yR = yR_compare*(-mu*ksi*F_z*torch.sign(alpha_R)) + ~yR_compare * (-C*torch.tan(alpha_R) + (C**2*torch.atan2(alpha_R, frand)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_R, frand)) - (C*torch.atan2(alpha_R, frand))**3/(27*(mu*ksi*F_z)**2)))
 
         x_dot = v_x*torch.cos(psi) - v_y*torch.sin(psi)
         y_dot = v_x*torch.sin(psi) + v_y*torch.cos(psi)
