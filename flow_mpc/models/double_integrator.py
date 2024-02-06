@@ -54,7 +54,8 @@ class DoubleIntegratorDynamics(nn.Module):
         F_z = 100
         a = 10
         b = 4
-        state = torch.cat((state, torch.rand((256, 5), device = 'cuda:0')), 1)
+        state = torch.cat((state, torch.rand((256,5), device = 'cuda:0')), 1)
+        
         x, y, psi, beta, v_x, v_y, r, delta, F_x = torch.chunk(state, chunks=9, dim=-1)
 
         delta_des, F_xdes = torch.chunk(control, chunks=2, dim=-1)
@@ -64,12 +65,12 @@ class DoubleIntegratorDynamics(nn.Module):
         R = beta - b*r/v_x
         
 
-        alpha_F = torch.atan2(F, torch.rand(F.size()))
-        alpha_R = torch.atan2(R, torch.rand(R.size()) )
+        alpha_F = torch.atan2(F, torch.rand(F.size(), device = 'cuda:0'))
+        alpha_R = torch.atan2(R, torch.rand(R.size(), device = 'cuda:0') )
         ksi = torch.sqrt((mu**2*F_z - F_x**2)/(mu*F_z))
         gamma_val = 3*ksi*F_z*torch.sign(alpha_F)
 
-        gamma = torch.abs(torch.atan2(gamma_val, torch.rand(gamma_val.size())))
+        gamma = torch.abs(torch.atan2(gamma_val, torch.rand(gamma_val.size(), device = 'cuda:0')))
 
         if alpha_F >= gamma:
             F_yF = -mu*ksi*F_z*torch.sign(alpha_F)
