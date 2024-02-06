@@ -70,22 +70,18 @@ class DoubleIntegratorDynamics(nn.Module):
         
 
         alpha_F = torch.atan2(F, torch.rand(F.size(), device = 'cuda:0'))
-        
+
         alpha_R = torch.atan2(R, torch.rand(R.size(), device = 'cuda:0') )
         ksi = torch.sqrt((mu**2*F_z - F_x**2)/(mu*F_z))
         gamma_val = 3*ksi*F_z*torch.sign(alpha_F)
 
         gamma = torch.abs(torch.atan2(gamma_val, torch.rand(gamma_val.size(), device = 'cuda:0')))
 
-        if alpha_F >= gamma:
-            F_yF = -mu*ksi*F_z*torch.sign(alpha_F)
-        else:
-            F_yF = -C*torch.tan(alpha_F) + (C**2*torch.atan2(alpha_F)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_F))) - (C*torch.atan2(alpha_F))**3/(27*(mu*ksi*F_z)**2) 
+        yF_compare = torch.ge(alpha_F, gamma)
+        F_yF = yF_compare * (-mu*ksi*F_z*torch.sign(alpha_R)) + ~yF_compare * (-C*torch.tan(alpha_F) + (C**2*torch.atan2(alpha_F)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_F))) - (C*torch.atan2(alpha_F))**3/(27*(mu*ksi*F_z)**2))
 
-        if alpha_R >= gamma:
-            F_yR = -mu*ksi*F_z*torch.sign(alpha_R)
-        else:
-            F_yR = -C*torch.tan(alpha_R) + (C**2*torch.atan2(alpha_R)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_R))) - (C*torch.atan2(alpha_R))**3/(27*(mu*ksi*F_z)**2) 
+        yR_compare = torch.ge(alpha_R, gamma)
+        F_yR = yR_compare*(-mu*ksi*F_z*torch.sign(alpha_R)) + ~yR_compare * (-C*torch.tan(alpha_R) + (C**2*torch.atan2(alpha_R)**3)/(3*ksi*mu*F_z*torch.abs(torch.atan2(alpha_R))) - (C*torch.atan2(alpha_R))**3/(27*(mu*ksi*F_z)**2) )
 
         x_dot = v_x*torch.cos(psi) - v_y*torch.sin(psi)
         y_dot = v_x*torch.sin(psi) + v_y*torch.cos(psi)
