@@ -60,10 +60,16 @@ class DoubleIntegratorDynamics(nn.Module):
         delta_des, F_xdes = torch.chunk(control, chunks=2, dim=-1)
 
         # Trigonometric fcns on all the angles needed for dynamics
-        alpha_F = torch.atan2(beta + a*r/v_x, torch.randn((beta + a*r/v_x).size()))
-        alpha_R = torch.atan2(beta - b*r/v_x, torch.randn((beta - b*r/v_x).size()) )
+        F = beta + a*r/v_x
+        R = beta - b*r/v_x
+        
+
+        alpha_F = torch.atan2(F, torch.rand(F.size()))
+        alpha_R = torch.atan2(R, torch.rand(R.size()) )
         ksi = torch.sqrt((mu**2*F_z - F_x**2)/(mu*F_z))
-        gamma = torch.abs(torch.atan2(3*ksi*F_z*torch.sign(alpha), torch.randn((3*ksi*F_z*torch.sign(alpha)).size())))
+        gamma_val = 3*ksi*F_z*torch.sign(alpha_F)
+
+        gamma = torch.abs(torch.atan2(gamma_val, torch.rand(gamma_val.size())))
 
         if alpha_F >= gamma:
             F_yF = -mu*ksi*F_z*torch.sign(alpha_F)
