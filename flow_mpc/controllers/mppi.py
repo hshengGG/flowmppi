@@ -38,7 +38,7 @@ class MPPI:
                 peturbed_actions[:self.N//2] = self.action_transform(x[0].unsqueeze(0), noise[:self.N//2])
     		    
                 end_time = time.time()
-                self.forward_NF_time = end_time-start_time
+                self.reverse_NF_time = end_time-start_time
                 #To Do
                 # should be reverse
 
@@ -106,7 +106,7 @@ class MPPI:
                                            self.U.unsqueeze(0),
                                            reverse=True)
             action_end = time.time()
-        self.reverse_NF_time = action_end - action_start
+        self.forward_NF_time = action_end - action_start
         #To Do
         #should be forward
         

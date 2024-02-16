@@ -171,6 +171,7 @@ def test_controller(env, controller, T=50):
     project_reverse_times = []
     log_qu_times = []
     step_times = [] 
+    loss_times = [] #compute_loss function under controller_wrapper.py in iterations
     for i in range(T):
         print(f"episode {i}")
         episode_start = time.time()
@@ -181,6 +182,8 @@ def test_controller(env, controller, T=50):
             forward_NF_times.append(controller.controller.forward_NF_time)
             reverse_NF_times.append(controller.controller.reverse_NF_time)
             cost_times.append(controller.controller.cost_time)
+
+            loss_times.append(controller.loss_time)
             #project_times.append(controller.project_time)
             log_h_times.append(controller.log_h_time)
             action_sample_times.append(controller.action_sample_time)
@@ -236,6 +239,7 @@ def test_controller(env, controller, T=50):
     cost_times = Average(cost_times)
     log_h_times = Average(log_h_times)
     action_sample_times = Average(action_sample_times)
+    loss_times = Average(loss_times)
     horizon_times = Average(horizon_times)
     gradient_times =Average(gradient_times)
     project_reverse_times = Average(project_reverse_times)
@@ -243,34 +247,47 @@ def test_controller(env, controller, T=50):
     step_times = Average(step_times)
 
     #make a note for it
-    forward_NF_times = ["reverse_NF", forward_NF_times]
-    reverse_NF_times = ["forward_NF", reverse_NF_times]
-    cost_times= ["cost", cost_times]
+    
+   
     log_h_times = ["log_h", log_h_times]
-    action_sample_times = ["action_sample", action_sample_times]
     horizon_times = ["horizon", horizon_times] #grad_free_loss line 194 traner.py
-    gradient_times =["gradient", gradient_times] # controller wrapper line 394
+    
     project_reverse_times = ["project_reverse", project_reverse_times]
     log_qu_times = ["log_qu", log_qu_times]
     step_times = ["step_total", step_times]
 
+
+    action_sample_times = ["Phase 1 Perturbation", action_sample_times]
+    loss_times = ["Phase 2 Loss", loss_times]
+    gradient_times =["Phase 3 Gradient", gradient_times] # controller wrapper line 394
+    reverse_NF_times = ["Phase 4 Generation", reverse_NF_times] #mppi.py line 37
+    cost_times= ["Phase 5 Path Intergral", cost_times] # mppi.py line 54
+    forward_NF_times = ["Phase 6 Latent Map", forward_NF_times] #mppi.py line 90
+    other_times = ["Other", step_times - action_sample_times - loss_times - gradient_times - reverse_NF_times - forward_NF_times - cost_times]
+    
     with open('perf_race_car.csv', 'w') as file:
         writer = csv.writer(file)
         #writer.writerow(["One episode breakdown"])
         writer.writerow(['Label', 'Data'])
-        writer.writerow(step_times)
-        writer.writerow(forward_NF_times)
+        # writer.writerow(step_times)
+        # writer.writerow(forward_NF_times)
+        # writer.writerow(reverse_NF_times)
+        # writer.writerow(cost_times)
+        # # under is the projection part
+        # writer.writerow(log_h_times)
+        # writer.writerow(horizon_times)
+        # writer.writerow(gradient_times)
+        # writer.writerow(project_reverse_times)
+        # writer.writerow(log_qu_times)
+        writer.writerow(action_sample_times) # phase 1
+        writer.writerow(loss_times) # phase 2
+        writer.writerow(gradient_times)
         writer.writerow(reverse_NF_times)
         writer.writerow(cost_times)
-        # under is the projection part
-        writer.writerow(log_h_times)
-        writer.writerow(horizon_times)
-        writer.writerow(gradient_times)
-        writer.writerow(project_reverse_times)
-        writer.writerow(log_qu_times)
-        #writer.writerow(action_sample_times)
-        
-   
+        writer.writerow(forward_NF_times)
+        writer.writerow(other_times)
+
+
     return -cost, state_history, control_history, planned_control_sequences, failure, projected_envs, total_time / count
 
 
