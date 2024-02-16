@@ -245,10 +245,9 @@ def test_controller(env, controller, T=50):
     project_reverse_times = Average(project_reverse_times)
     log_qu_times = Average(log_qu_times)
     step_times = Average(step_times)
+    other_times = step_times - action_sample_times - loss_times - gradient_times - reverse_NF_times - forward_NF_times - cost_times
 
-    #make a note for it
     
-   
     log_h_times = ["log_h", log_h_times]
     horizon_times = ["horizon", horizon_times] #grad_free_loss line 194 traner.py
     
@@ -263,7 +262,7 @@ def test_controller(env, controller, T=50):
     reverse_NF_times = ["Phase 4 Generation", reverse_NF_times] #mppi.py line 37
     cost_times= ["Phase 5 Path Intergral", cost_times] # mppi.py line 54
     forward_NF_times = ["Phase 6 Latent Map", forward_NF_times] #mppi.py line 90
-    other_times = ["Other", step_times - action_sample_times - loss_times - gradient_times - reverse_NF_times - forward_NF_times - cost_times]
+    other_times = ["Other", other_times]
     
     with open('perf_race_car.csv', 'w') as file:
         writer = csv.writer(file)
