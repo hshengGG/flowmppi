@@ -37,9 +37,9 @@ class MPPI:
 		        
                 peturbed_actions[:self.N//2] = self.action_transform(x[0].unsqueeze(0), noise[:self.N//2])
                 print("-----------x[0] input size-----------")
-                print(len(x[0].unsqueeze(0)))
+                print(x[0].unsqueeze(0).shape)
                 print("-----------printing reverse flow input size-----------")
-                print(len(noise[:self.N//2]))
+                print(noise[:self.N//2].shape)
                 end_time = time.time()
                 self.reverse_NF_time = end_time-start_time
                 #To Do
@@ -47,7 +47,6 @@ class MPPI:
 
                 #appending times to be print out
                 #self.forward_NF_times.append(forward_NF_time)
-
                 peturbed_actions[self.N//2:] = self.U.unsqueeze(dim=0) + self.sigma * noise[self.N//2:]
                 action_cost_Z = torch.sum(self.lambda_ * noise * (noise - self.Z), dim=[1, 2])
                 action_cost_U = torch.sum(self.lambda_ * noise * self.U / self.sigma, dim=[1, 2])
@@ -109,7 +108,7 @@ class MPPI:
                                            self.U.unsqueeze(0),
                                            reverse=True)
             print("-----------printing forward flow input size-----------")
-            print(len(self.U.unsqueeze(0)))
+            print(self.U.unsqueeze(0).shape)
             action_end = time.time()
         self.forward_NF_time = action_end - action_start
         #To Do
