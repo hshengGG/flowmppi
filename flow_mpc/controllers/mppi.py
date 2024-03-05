@@ -36,7 +36,10 @@ class MPPI:
                 start_time = time.time()
 		        
                 peturbed_actions[:self.N//2] = self.action_transform(x[0].unsqueeze(0), noise[:self.N//2])
-    		    
+                print("-----------x[0] input size-----------")
+                print(len(x[0].unsqueeze(0)))
+                print("-----------printing reverse flow input size-----------")
+                print(len(noise[:self.N//2]))
                 end_time = time.time()
                 self.reverse_NF_time = end_time-start_time
                 #To Do
@@ -105,6 +108,8 @@ class MPPI:
             self.Z = self.action_transform(x[0].unsqueeze(0),
                                            self.U.unsqueeze(0),
                                            reverse=True)
+            print("-----------printing forward flow input size-----------")
+            print(len(self.U.unsqueeze(0)))
             action_end = time.time()
         self.forward_NF_time = action_end - action_start
         #To Do
