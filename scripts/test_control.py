@@ -245,12 +245,14 @@ def test_controller(env, controller, T=50):
     project_reverse_times = Average(project_reverse_times)
     log_qu_times = Average(log_qu_times)
     step_times = Average(step_times)
+
+    #calculating remaining time other than phase 1 - 6
     other_times = step_times - action_sample_times - loss_times - gradient_times - reverse_NF_times - forward_NF_times - cost_times
 
     
+    #making arrays
     log_h_times = ["log_h", log_h_times]
     horizon_times = ["horizon", horizon_times] #grad_free_loss line 194 traner.py
-    
     project_reverse_times = ["project_reverse", project_reverse_times]
     log_qu_times = ["log_qu", log_qu_times]
     step_times = ["step_total", step_times]
@@ -264,7 +266,7 @@ def test_controller(env, controller, T=50):
     forward_NF_times = ["Phase 6 Latent Map", forward_NF_times] #mppi.py line 90
     other_times = ["Other", other_times]
     
-    with open('perf_race_car.csv', 'w') as file:
+    with open('race_car_nano.csv', 'w') as file:
         writer = csv.writer(file)
         #writer.writerow(["One episode breakdown"])
         writer.writerow(['Label', 'Data'])

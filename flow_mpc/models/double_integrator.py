@@ -44,8 +44,11 @@ class DoubleIntegratorDynamics(nn.Module):
             raise ValueError('dim must either be 2 or 3')
 
     def forward(self, state, control): #changed from action to control
-        #return race_car.forward(state,control)
+        #double integrator        
         #return self.batched_dynamics(state, control)
+
+
+        #race car model
         ''' unroll state '''
         C = 1200
         mu = 0.55
@@ -95,6 +98,8 @@ class DoubleIntegratorDynamics(nn.Module):
        
        
        
+
+        #quadcoptor model
         ''' unroll state '''
         '''
         g = -9.81
